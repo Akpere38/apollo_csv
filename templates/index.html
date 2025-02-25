@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Mapper</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex items-center justify-center min-h-screen bg-gray-100">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+        <h2 class="text-xl font-bold mb-4">Upload CSV File</h2>
+        <input type="file" id="fileInput" accept=".csv" class="mb-4 w-full border p-2 rounded" />
+        <button id="uploadBtn" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Upload</button>
+        <p id="status" class="mt-4 text-gray-700"></p>
+        <a id="downloadLink" class="hidden mt-4 text-blue-500 underline">Download Processed CSV</a>
+    </div>
+
+    
+    <script>
+        document.getElementById("uploadBtn").addEventListener("click", function() {
+            const fileInput = document.getElementById("fileInput");
+            const status = document.getElementById("status");
+            const downloadLink = document.getElementById("downloadLink");
+    
+            if (!fileInput.files.length) {
+                status.textContent = "Please select a CSV file.";
+                return;
+            }
+    
+            const fileName = fileInput.files[0].name; // Get the original file name
+            const newFileName = `payload_${fileName}`; // Rename according to Flask logic
+    
+            const formData = new FormData();
+            formData.append("file", fileInput.files[0]);
+    
+            status.textContent = "Uploading...";
+    
+            fetch("/upload", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                downloadLink.href = url;
+                downloadLink.download = newFileName; // Set the correct filename
+                downloadLink.classList.remove("hidden");
+                status.textContent = "File processed successfully!";
+            })
+            .catch(() => {
+                status.textContent = "Error processing file.";
+            });
+        });
+    </script>
+    
+</body>
+</html>
